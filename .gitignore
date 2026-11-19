@@ -1,0 +1,27 @@
+# Python
+backend/.venv/
+.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+backend/.pytest_cache/
+backend/data/
+
+# Node / Frontend
+frontend/node_modules/
+node_modules/
+frontend/dist/
+dist/
+
+# Environment & Deployment
+.env
+.env.local
+.env.*.local
+.vercel/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.log
