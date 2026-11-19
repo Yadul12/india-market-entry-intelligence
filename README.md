@@ -127,3 +127,13 @@ Validates:
 cd frontend
 npm run build
 ```
+
+---
+
+## Deploying to Vercel
+
+This repository is pre-configured for single-project full-stack deployment on Vercel:
+- [vercel.json](vercel.json) builds the Vite frontend (`frontend/dist`) and routes `/api/*`, `/docs`, and `/openapi.json` to the Python Fluid Compute ASGI entrypoint at [api/index.py](api/index.py).
+- [requirements.txt](requirements.txt) supplies the runtime Python packages (`fastapi`, `sqlalchemy`, `psycopg[binary]`, `pandas`, `numpy`, `reportlab`).
+- **Database Persistence on Vercel**: Set `DATABASE_URL` (or connect a Marketplace PostgreSQL database such as Neon so `POSTGRES_URL` is injected) for durable cross-invocation persistence. If unset, the backend automatically uses writable `/tmp/india_market_entry.db` seeded with all verified baseline datasets on cold start.
+
