@@ -1,8 +1,11 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 import threading
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.db.database import Base, SessionLocal, engine
@@ -65,3 +68,23 @@ app.include_router(strategy.router, prefix=settings.api_prefix)
 app.include_router(risks.router, prefix=settings.api_prefix)
 app.include_router(sources.router, prefix=settings.api_prefix)
 app.include_router(reports.router, prefix=settings.api_prefix)
+
+# Serve built Vite SPA static bundle when packaged for unified deployment (e.g., Vercel / single-container)
+STATIC_UI_DIR = Path(__file__).resolve().parent.parent / "static_ui"
+if (STATIC_UI_DIR / "index.html").is_file():
+    assets_dir = STATIC_UI_DIR / "assets"
+    if assets_dir.is_dir():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="static-assets")
+
+    @app.get("/", include_in_schema=False)
+    def serve_spa_root():
+        return FileResponse(STATIC_UI_DIR / "index.html")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def serve_spa_fallback(full_path: str):
+        if full_path.startswith("api/") or full_path == "api":
+            raise HTTPException(status_code=404, detail="API endpoint not found.")
+        candidate = (STATIC_UI_DIR / full_path).resolve()
+        if candidate.is_file() and STATIC_UI_DIR.resolve() in candidate.parents:
+            return FileResponse(candidate)
+        return FileResponse(STATIC_UI_DIR / "index.html")
